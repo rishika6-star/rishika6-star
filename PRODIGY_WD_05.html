@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather App</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color:blue;
+  }
+  #content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  th {
+    background-color: #f2f2f2;
+  }
+  #weather {
+    margin-top: 20px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<div id="content">
+  <h1>Weather App</h1>
+  <div id="location"></div>
+  <table>
+    <caption>Location Data</caption>
+    <tr>
+      <th>City</th>
+      <th>Region</th>
+      <th>Country</th>
+      <th>Latitude</th>
+      <th>Longitude</th>
+    </tr>
+    <tr id="locationRow">
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </table>
+  <table>
+    <caption>Weather Forecast (Next 3 Days)</caption>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Min Temp (°C)</th>
+        <th>Max Temp (°C)</th>
+      </tr>
+    </thead>
+    <tbody id="forecastTableBody"></tbody>
+  </table>
+</div>
+
+<script>
+  const ipstackAccessKey = 'YOUR_ipstack_ACCESS_KEY';
+  const weatherstackAccessKey = 'YOUR_Weatherstack_ACCESS_KEY';
+
+  fetch(`http://api.ipstack.com/check?access_key=${ipstackAccessKey}`)
+    .then(response => response.json())
+    .then(data => {
+      const ipAddress = data.ip;
+
+      fetch(`http://api.ipstack.com/${ipAddress}?access_key=${ipstackAccessKey}`)
+        .then(response => response.json())
+        .then(locationData => {
+          const locationElement = document.getElementById('location');
+          const city = locationData.city;
+          const region = locationData.region_name;
+          const country = locationData.country_name;
+          const latitude = locationData.latitude;
+          const longitude = locationData.longitude;
+
+          locationElement.innerHTML = `Your location: ${city}, ${region}, ${country}`;
+
+          const locationRow = document.getElementById('locationRow');
+          locationRow.innerHTML = `
+            <td>${city}</td>
+            <td>${region}</td>
+            <td>${country}</td>
+            <td>${latitude}</td>
+            <td>${longitude}</td>
+          `;
+
+          const weatherApiUrl = `http://api.weatherstack.com/forecast?access_key=${weatherstackAccessKey}&query=${city}&forecast_days=3`;
+
+          fetch(weatherApiUrl)
+            .then(response => response.json())
+            .then(weatherData => {
+              console.log('Weather Data Response:', weatherData);
+
+              const forecastTableBody = document.getElementById('forecastTableBody');
+              forecastTableBody.innerHTML = '';
+
+              for (const date in weatherData.forecast) {
+    if (weatherData.forecast.hasOwnProperty(date)) {
+      const forecast = weatherData.forecast[date];
+      const minTemp = forecast.mintemp;
+      const maxTemp = forecast.maxtemp;
+
+      forecastTableBody.innerHTML += `
+        <tr>
+          <td>${date}</td>
+          <td>${minTemp}°C</td>
+          <td>${maxTemp}°C</td>
+        </tr>
+              `;
+    }
+}
+            })
+            .catch(error => {
+              console.error('Error fetching weather data:', error);
+              const forecastTableBody = document.getElementById('forecastTableBody');
+              forecastTableBody.innerHTML = '<tr><td colspan="3">Weather forecast data not available.</td></tr>';
+            });
+        })
+        .catch(error => {
+          console.error('Error fetching location data:', error);
+          const locationElement = document.getElementById('location');
+          locationElement.innerHTML = 'Error fetching location data.';
+        });
+    })
+    .catch(error => {
+      console.error('Error fetching IP address data:', error);
+      const locationElement = document.getElementById('location');
+      locationElement.innerHTML = 'Error fetching IP address data.';
+    });
+</script>
+</body>
+</html>
