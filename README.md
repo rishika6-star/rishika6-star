@@ -1,3 +1,4 @@
+PRODIGY_WD_PROJECTS
 - 👋 Hi, I’m @rishika6-star
 - 🌱 I’m currently learning FULL STACK WEB DEVELOPMENT and precceeding with JAVA.
 - 💞️ I’m looking to collaborate on developing web application projects.
